@@ -1,11 +1,12 @@
-import React from 'react'
+import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs";
+import React from "react";
 
 const HomeScreen = () => {
   return (
     <div>
-      Home Screen
+      <LogoutLink>Logout</LogoutLink>
     </div>
-  )
-}
+  );
+};
 
-export default HomeScreen
+export default HomeScreen;
