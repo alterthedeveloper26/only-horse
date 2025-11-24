@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs";
+import { ModeToggle } from "./ModeToggle";
 
 const SIDEBAR_LINKS = [
   {
@@ -59,7 +60,7 @@ const Sidebar = () => {
 
         <DropdownMenu>
           <div className="flex w-12 items-center justify-center gap-2 rounded-full px-2 py-1 font-bold hover:bg-primary-foreground hover:text-primary lg:w-full lg:justify-normal">
-            <DropdownMenuTrigger className="h-6 w-6">
+            <DropdownMenuTrigger className="flex items-center gap-2">
               <User className="h-6 w-6" />
               <span className="hidden lg:block">Setting</span>
             </DropdownMenuTrigger>
@@ -76,6 +77,8 @@ const Sidebar = () => {
             </LogoutLink>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <ModeToggle />
       </nav>
     </div>
   );
