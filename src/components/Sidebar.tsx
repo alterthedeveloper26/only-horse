@@ -27,7 +27,7 @@ const SIDEBAR_LINKS = [
 ];
 
 const Sidebar = () => {
-  const isAdmin = false;
+  const isAdmin = true;
   return (
     <div className="sticky left-0 top-0 flex h-screen flex-col gap-3 border-r px-2 lg:w-1/5">
       <Link href="/update-profile" className="max-w-fit">

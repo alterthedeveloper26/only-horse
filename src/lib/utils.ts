@@ -6,5 +6,5 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function centsToDollars(cents: number) {
-  return (cents / 100).toFixed(3);
+  return (cents / 100).toFixed(2);
 }

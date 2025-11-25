@@ -4,11 +4,12 @@ import { DollarSign } from "lucide-react";
 import { centsToDollars, cn } from "@/lib/utils";
 import Link from "next/link";
 import { buttonVariants } from "./ui/button";
+import ZoomedImage from "./ZoomedImage";
 
 const SuggestedProduct = ({ product }: { product: any }) => {
   return (
     <Card className="flex flex-col">
-      <CardHeader className="flex items-center justify-between space-y-0 px-2 pb-0">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 px-2 pb-0">
         <CardTitle className="text-sm font-medium">
           <p className="w-28 overflow-hidden text-ellipsis text-nowrap">
             {product.name}
@@ -20,7 +21,7 @@ const SuggestedProduct = ({ product }: { product: any }) => {
         </div>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col gap-2 p-2">
-        <img src={product.image} alt="Prod img" className="h-44 object-cover" />
+        <ZoomedImage imgSrc={product.image} className="h-44 object-cover" />
         <div className="mt-auto flex justify-center">
           <Link
             href={`/merch/${product.id}`}
