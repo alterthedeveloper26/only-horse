@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import Footer from "@/components/Footer";
+import "next-cloudinary/dist/cld-video-player.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,7 +26,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="h-screen flex flex-col">
+          <div className="flex h-screen flex-col">
             <div className="flex-1">{children}</div>
             <Footer />
           </div>
