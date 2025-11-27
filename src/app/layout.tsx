@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/providers/ThemeProvider";
 import Footer from "@/components/Footer";
 import "next-cloudinary/dist/cld-video-player.css";
 import { TanStackProvider } from "@/providers/ReactQueryProvider";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -33,6 +34,7 @@ export default function RootLayout({
             </div>
             <Footer />
           </div>
+          <Toaster position="top-right" />
         </ThemeProvider>
       </body>
     </html>

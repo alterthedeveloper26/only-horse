@@ -30,3 +30,17 @@ export async function createPostAction({
 
   return { success: true, post: newPost };
 }
+
+export const getAllProductsAction = async () => {
+  const user = await getCurrentUser();
+
+  const isAdmin = checkAdmin(user?.email);
+
+  if (!user || !isAdmin) {
+    throw new Error("Not authorized!");
+  }
+
+  const products = await prisma.product.findMany();
+
+  return { success: true, products };
+};

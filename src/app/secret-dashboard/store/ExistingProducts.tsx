@@ -2,12 +2,18 @@
 
 import ProductCard from "@/components/ProductCard";
 import ProductSkeleton from "@/components/skeletons/ProductSkeleton";
-import { products } from "@/dummy_data";
+import { useQuery } from "@tanstack/react-query";
 import { FileQuestionMark, X } from "lucide-react";
 import React, { useState } from "react";
+import { getAllProductsAction } from "../action";
 
 const ExistingProducts = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading, data } = useQuery({
+    queryKey: ["getAllProducts"],
+    queryFn: getAllProductsAction,
+  });
+
+  const products = data?.products || [];
 
   return (
     <>
@@ -15,11 +21,21 @@ const ExistingProducts = () => {
         Existing Products
       </p>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {products.map((prod) => (
-          <ProductCard product={prod} key={prod.id} />
-        ))}
-      </div>
+      {isLoading && (
+        <div className="flex flex-wrap justify-start gap-10">
+          {[...Array(3)].map((prod, index) => (
+            <ProductSkeleton key={index} />
+          ))}
+        </div>
+      )}
+
+      {products.length > 0 && (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {products.map((prod) => (
+            <ProductCard product={prod} key={prod.id} />
+          ))}
+        </div>
+      )}
 
       {!isLoading && products?.length === 0 && (
         <div className="mt-10 flex flex-col items-center justify-center rounded-lg bg-secondary p-6 shadow-md">
@@ -30,14 +46,6 @@ const ExistingProducts = () => {
           <p className="mt-2 text-center text-base text-gray-500">
             Please add new products to see them here.
           </p>
-        </div>
-      )}
-
-      {isLoading && (
-        <div className="flex flex-wrap justify-start gap-10">
-          {products.map((prod) => (
-            <ProductSkeleton />
-          ))}
         </div>
       )}
     </>

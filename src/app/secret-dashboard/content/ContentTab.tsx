@@ -43,12 +43,12 @@ const ContentTab = () => {
         mediaUrl,
       }),
     onSuccess: () => {
-      toast("System notice", {
+      toast.success("System notice", {
         description: "Post created successfully!",
       });
     },
     onError: () => {
-      toast("System notice", {
+      toast.error("System notice", {
         description: "Failed to create post!",
       });
     },
@@ -70,7 +70,6 @@ const ContentTab = () => {
       <p className="my-5 text-center text-3xl font-bold uppercase">
         <UnderlinedText className="decoration-wavy">Share</UnderlinedText> posts
       </p>
-
       <form onSubmit={handleFormSubmit}>
         <Card className="mx-auto w-full max-w-md">
           <CardHeader>
