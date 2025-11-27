@@ -12,6 +12,7 @@ import {
 } from "./ui/dropdown-menu";
 import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs";
 import { ModeToggle } from "./ModeToggle";
+import { getCurrentUser, checkAdmin } from "@/lib/utils";
 
 const SIDEBAR_LINKS = [
   {
@@ -26,13 +27,17 @@ const SIDEBAR_LINKS = [
   },
 ];
 
-const Sidebar = () => {
-  const isAdmin = true;
+const Sidebar = async () => {
+  const user = await getCurrentUser();
+  const isAdmin = checkAdmin(user?.email);
   return (
     <div className="sticky left-0 top-0 flex h-screen flex-col gap-3 border-r px-2 lg:w-1/5">
       <Link href="/update-profile" className="max-w-fit">
         <Avatar className="mt-4 cursor-pointer">
-          <AvatarImage src="/user-placeholder.png" className="object-cover" />
+          <AvatarImage
+            src={user?.picture || "/user-placeholder.png"}
+            className="rounded-full object-cover"
+          />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       </Link>
@@ -72,7 +77,7 @@ const Sidebar = () => {
             <Link href={"#"}>
               <DropdownMenuItem>Billing</DropdownMenuItem>
             </Link>
-            <LogoutLink href={"#"}>
+            <LogoutLink>
               <DropdownMenuItem>Logout</DropdownMenuItem>
             </LogoutLink>
           </DropdownMenuContent>

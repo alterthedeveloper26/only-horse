@@ -15,7 +15,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { Terminal, TriangleAlert } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { Loader, TriangleAlert } from "lucide-react";
 import {
   CldUploadWidget,
   CldVideoPlayer,
@@ -23,6 +24,8 @@ import {
 } from "next-cloudinary";
 import Image from "next/image";
 import React, { useState } from "react";
+import { createPostAction } from "../action";
+import { toast } from "sonner";
 
 const ContentTab = () => {
   const [text, setText] = useState("");
@@ -30,13 +33,45 @@ const ContentTab = () => {
   const [mediaUrl, setMediaUrl] = useState<string>("");
   const [isPublic, setIsPublic] = useState<boolean>(false);
 
+  const { mutate, isPending } = useMutation({
+    // mutationFn: createPostAction,
+    mutationFn: async () =>
+      createPostAction({
+        isPublic,
+        text,
+        mediaType,
+        mediaUrl,
+      }),
+    onSuccess: () => {
+      toast("System notice", {
+        description: "Post created successfully!",
+      });
+    },
+    onError: () => {
+      toast("System notice", {
+        description: "Failed to create post!",
+      });
+    },
+  });
+
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    mutate();
+    // mutate({
+    //   isPublic,
+    //   text,
+    //   mediaType,
+    //   mediaUrl,
+    // });
+  };
+
   return (
     <>
       <p className="my-5 text-center text-3xl font-bold uppercase">
         <UnderlinedText className="decoration-wavy">Share</UnderlinedText> posts
       </p>
 
-      <form>
+      <form onSubmit={handleFormSubmit}>
         <Card className="mx-auto w-full max-w-md">
           <CardHeader>
             <CardTitle>New Post</CardTitle>
@@ -50,6 +85,7 @@ const ContentTab = () => {
               <Textarea
                 id="content"
                 placeholder="Description of content"
+                onChange={(e) => setText(e.currentTarget.value)}
               ></Textarea>
             </div>
             {/* NOTE: Choose media type part */}
@@ -140,8 +176,8 @@ const ContentTab = () => {
           </CardContent>
 
           <CardFooter>
-            <Button className="w-full" type="submit">
-              Create Post
+            <Button className="w-full" type="submit" disabled={isPending}>
+              {isPending ? <Loader className="animate-spin" /> : "Create Post"}
             </Button>
           </CardFooter>
         </Card>
