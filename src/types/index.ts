@@ -1,3 +1,5 @@
+export type AcceptedMedia = "image" | "video";
+
 export interface CreatePostDto {
   isPublic: boolean;
   mediaUrl?: string;
@@ -5,4 +7,8 @@ export interface CreatePostDto {
   text: string;
 }
 
-export type AcceptedMedia = "image" | "video";
+export interface CreateProductDto {
+  name: string;
+  image: string;
+  price: number;
+}

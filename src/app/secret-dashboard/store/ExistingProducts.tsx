@@ -4,16 +4,17 @@ import ProductCard from "@/components/ProductCard";
 import ProductSkeleton from "@/components/skeletons/ProductSkeleton";
 import { useQuery } from "@tanstack/react-query";
 import { FileQuestionMark, X } from "lucide-react";
-import React, { useState } from "react";
+import React from "react";
 import { getAllProductsAction } from "../action";
+import { KEYS } from "@/constants";
 
 const ExistingProducts = () => {
   const { isLoading, data } = useQuery({
-    queryKey: ["getAllProducts"],
-    queryFn: getAllProductsAction,
+    queryKey: [KEYS.FETCH_PRODUCTS],
+    queryFn: async () => getAllProductsAction(),
   });
 
-  const products = data?.products || [];
+  const products = data?.data || [];
 
   return (
     <>
@@ -32,7 +33,7 @@ const ExistingProducts = () => {
       {products.length > 0 && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {products.map((prod) => (
-            <ProductCard product={prod} key={prod.id} />
+            <ProductCard product={prod} key={prod.id} adminView={true} />
           ))}
         </div>
       )}

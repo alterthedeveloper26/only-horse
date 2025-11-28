@@ -32,7 +32,7 @@ const ZoomedImage = ({
         style={{
           transformOrigin: `${mousePosition.x}% ${mousePosition.y}%`,
         }}
-        className="transform cursor-pointer rounded-md transition-transform duration-500 ease-in-out hover:scale-[2.5]"
+        className="transform cursor-pointer rounded-md object-contain transition-transform duration-500 ease-in-out hover:scale-[2.5]"
       />
     </div>
   );

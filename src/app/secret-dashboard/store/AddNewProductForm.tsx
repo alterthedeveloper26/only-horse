@@ -12,25 +12,49 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  CldUploadWidget,
-  CldVideoPlayer,
-  CloudinaryUploadWidgetInfo,
-} from "next-cloudinary";
+import { useMutation } from "@tanstack/react-query";
+import { CldUploadWidget, CloudinaryUploadWidgetInfo } from "next-cloudinary";
 import Image from "next/image";
 import React, { useState } from "react";
+import { addNewProductsAction } from "../action";
+import { Loader } from "lucide-react";
+import { toast } from "@/lib/toast";
+import { queryClient } from "@/providers/ReactQueryProvider";
+import { KEYS } from "@/constants";
 
 const AddNewProductForm = () => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState<number>(0);
   const [mediaUrl, setMediaUrl] = useState<string>("");
 
+  const { mutate, isPending } = useMutation({
+    mutationFn: async () =>
+      addNewProductsAction({
+        image: mediaUrl,
+        name,
+        price,
+      }),
+    mutationKey: ["createProduct"],
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [KEYS.FETCH_PRODUCTS] });
+      toast.success("Succeed to create product!");
+    },
+    onError: () => {
+      toast.error("Failed to create product!");
+    },
+  });
+
+  const handleProdCreation = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    mutate();
+  };
+
   return (
     <>
       <p className="my-5 text-center text-3xl font-medium tracking-tighter">
         Add <RotatedText>New</RotatedText> Product
       </p>
-      <form>
+      <form onSubmit={handleProdCreation}>
         <Card className="mx-auto w-full max-w-md">
           <CardHeader>
             <CardTitle className="text-2xl">New Merch</CardTitle>
@@ -97,8 +121,12 @@ const AddNewProductForm = () => {
             )}
 
             <CardFooter>
-              <Button className="w-full" type="submit">
-                Add Product
+              <Button className="w-full" type="submit" disabled={isPending}>
+                {isPending ? (
+                  <Loader className="animate-spin" />
+                ) : (
+                  "Add Product"
+                )}
               </Button>
             </CardFooter>
           </CardContent>

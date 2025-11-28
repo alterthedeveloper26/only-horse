@@ -25,7 +25,7 @@ import {
 import Image from "next/image";
 import React, { useState } from "react";
 import { createPostAction } from "../action";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 const ContentTab = () => {
   const [text, setText] = useState("");
@@ -43,14 +43,10 @@ const ContentTab = () => {
         mediaUrl,
       }),
     onSuccess: () => {
-      toast.success("System notice", {
-        description: "Post created successfully!",
-      });
+      toast.success("Post created successfully!");
     },
     onError: () => {
-      toast.error("System notice", {
-        description: "Failed to create post!",
-      });
+      toast.error("Failed to create post!");
     },
   });
 
