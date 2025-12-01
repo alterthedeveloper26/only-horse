@@ -5,8 +5,9 @@ import { centsToDollars, cn } from "@/lib/utils";
 import Link from "next/link";
 import { buttonVariants } from "./ui/button";
 import ZoomedImage from "./ZoomedImage";
+import { Product } from "@/generated/prisma/client";
 
-const SuggestedProduct = ({ product }: { product: any }) => {
+const SuggestedProduct = ({ product }: { product: Product }) => {
   return (
     <Card className="flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 px-2 pb-0">
@@ -26,7 +27,9 @@ const SuggestedProduct = ({ product }: { product: any }) => {
           <Link
             href={`/merch/${product.id}`}
             className={cn("w-full", buttonVariants({ size: "sm" }))}
-          ></Link>
+          >
+            Buy
+          </Link>
         </div>
       </CardContent>
     </Card>

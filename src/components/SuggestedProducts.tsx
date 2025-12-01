@@ -1,8 +1,10 @@
 import React from "react";
 import SuggestedProduct from "./SuggestedProduct";
-import { products } from "@/dummy_data";
+import { getLiveProducts } from "@/db/product.repository";
 
-const SuggestedProducts = () => {
+const SuggestedProducts = async () => {
+  const products = await getLiveProducts()
+
   return (
     <div className="sticky right-0 top-0 ml-3 hidden h-screen flex-col gap-3 px-2 lg:flex lg:w-2/5">
       <div className="flex flex-col gap-2 lg:mt-6 xl:mt-6">

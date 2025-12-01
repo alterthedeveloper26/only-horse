@@ -3,6 +3,7 @@
 import { prisma } from "@/db/prisma";
 import { checkAdmin, getCurrentUser } from "@/lib/utils";
 import { CreatePostDto, CreateProductDto } from "@/types";
+import { success, fail } from "@/lib/utils";
 
 export async function getAndValidateAdmin() {
   const user = await getCurrentUser();
@@ -14,20 +15,6 @@ export async function getAndValidateAdmin() {
   }
 
   return user;
-}
-
-function success<T>(data: T) {
-  return {
-    success: true,
-    data,
-  };
-}
-
-function fail(message?: string) {
-  return {
-    success: false,
-    message,
-  };
 }
 
 export async function createPostAction({

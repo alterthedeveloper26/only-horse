@@ -19,3 +19,17 @@ export async function getCurrentUser() {
 export function checkAdmin(email?: string | null) {
   return email && email === process.env.ADMIN_EMAIL;
 }
+
+export function success<T>(data: T) {
+  return {
+    success: true,
+    data,
+  };
+}
+
+export function fail(message?: string) {
+  return {
+    success: false,
+    message,
+  };
+}

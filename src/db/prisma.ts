@@ -10,8 +10,9 @@ function getPrismaClient() {
     throw new Error("DATABASE_URL environment variable is not set");
   }
 
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-  const adapter = new PrismaNeon(pool as any);
+  const adapter = new PrismaNeon({
+    connectionString: process.env.DATABASE_URL,
+  });
   return new PrismaClient({ adapter });
 }
 

@@ -1,9 +1,16 @@
 import UnderlinedText from "@/components/decorators/UnderlinedText";
 import ProductCard from "@/components/ProductCard";
+import { prisma } from "@/db/prisma";
 import { products } from "@/dummy_data";
 import React from "react";
 
-const Page = () => {
+const Page = async () => {
+  const products = await prisma.product.findMany({
+    where: {
+      isArchived: false
+    }
+  })
+
   return (
     <div className="my-10 px-3 md:px-10">
       <h1 className="my-5 text-center text-3xl font-bold tracking-tight">

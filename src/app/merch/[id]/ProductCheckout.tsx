@@ -10,10 +10,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import ZoomedImage from "@/components/ZoomedImage";
+import { Product } from "@/generated/prisma/client";
 import { centsToDollars } from "@/lib/utils";
 import React, { useState } from "react";
 
-const ProductCheckout = ({ product }: { product: any }) => {
+const ProductCheckout = ({ product }: { product: Product }) => {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
   return (
@@ -23,7 +24,7 @@ const ProductCheckout = ({ product }: { product: any }) => {
         <h1 className="text-2xl font-bold md:text-4xl">{product.name}</h1>
 
         <p className="text-base text-muted-foreground">
-          {centsToDollars(product.price)}
+          {centsToDollars(product.price)}$
         </p>
         <Label className="mt-5 inline-block">Size</Label>
         <Select onValueChange={setSelectedSize}>
