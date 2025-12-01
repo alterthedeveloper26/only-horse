@@ -14,35 +14,50 @@ import {
 import UploadImageButton from "@/components/UploadImageButton";
 import { getCurrentUser } from "@/lib/utils";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getUserProfileAction, updateUserProfileAction } from "./action";
 import { Loader } from "lucide-react";
 import { queryClient } from "@/providers/ReactQueryProvider";
+import { KEYS } from "@/constants";
 
 const UpdateProfileForm = () => {
   const [name, setName] = useState<string>();
   const [email, setEmail] = useState<string>();
-  const [mediUrl, setMediaUrl] = useState<string>();
+  const [mediaUrl, setMediaUrl] = useState<string>();
   const [profileImage, setProfileImage] = useState<string>();
 
   const { data: getUserRes, isLoading: getUserLoading } = useQuery({
-    queryKey: ["userProfile"],
+    queryKey: [KEYS.GET_PROFILE],
     queryFn: async () => await getUserProfileAction(),
   });
 
+  const userInfo = getUserRes?.data;
+
+  useEffect(() => {
+    if (userInfo) {
+      setName(userInfo.name || "");
+      setEmail(userInfo.email || "");
+      setProfileImage(userInfo.image || "");
+    }
+  }, [userInfo]);
+
   const { mutate: updateUserProfile, isPending } = useMutation({
     mutationKey: ["updateProfile"],
-    mutationFn: updateUserProfileAction,
+    mutationFn: () =>
+      updateUserProfileAction({
+        name,
+        image: mediaUrl,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["userProfile"],
+        queryKey: [KEYS.GET_PROFILE],
       });
     },
   });
 
   const handleUpdateProfile = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    updateUserProfile({ name, image: mediUrl });
+    updateUserProfile();
   };
 
   return (
@@ -55,7 +70,7 @@ const UpdateProfileForm = () => {
           <div className="flex justify-center">
             <Avatar className="h-20 w-20">
               <AvatarImage
-                src={getUserRes?.data?.image || "/user-placeholder.ong"}
+                src={mediaUrl || profileImage || "/user-placeholder.png"}
                 className="object-contain"
               />
               <AvatarFallback>CN</AvatarFallback>
@@ -66,7 +81,7 @@ const UpdateProfileForm = () => {
             <Label>Name</Label>
             <Input
               placeholder="Enter your name"
-              value={getUserRes?.data?.name}
+              value={name || ""}
               className="my-2"
               onChange={(e) => setName(e.currentTarget.value)}
             />
@@ -75,11 +90,7 @@ const UpdateProfileForm = () => {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger className="w-full" type="button">
-                  <Input
-                    disabled
-                    value={getUserRes?.data?.email}
-                    className="my-2"
-                  />
+                  <Input disabled value={email || ""} className="my-2" />
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="text-sm">

@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loader } from "lucide-react";
 import React, { useEffect } from "react";
-import { checkAuthStatus } from "./actions";
+import { checkAuthStatus } from "./action";
 import { useRouter } from "next/navigation";
 
 const Page = () => {

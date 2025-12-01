@@ -1,4 +1,4 @@
-import { checkAuthStatus } from "@/app/auth/callback/actions";
+import { checkAuthStatus } from "@/app/auth/callback/action";
 import { NextResponse } from "next/server";
 
 // NOTE: Development api, remove when finish

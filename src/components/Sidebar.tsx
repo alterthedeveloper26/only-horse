@@ -13,6 +13,9 @@ import {
 import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs";
 import { ModeToggle } from "./ModeToggle";
 import { getCurrentUser, checkAdmin } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { KEYS } from "@/constants";
+import { getUserById } from "@/db/user.repository";
 
 const SIDEBAR_LINKS = [
   {
@@ -28,14 +31,15 @@ const SIDEBAR_LINKS = [
 ];
 
 const Sidebar = async () => {
-  const user = await getCurrentUser();
-  const isAdmin = checkAdmin(user?.email);
+  const kindeUser = await getCurrentUser();
+  const userProfile = await getUserById(kindeUser!.id);
+  const isAdmin = checkAdmin(userProfile?.email);
   return (
     <div className="sticky left-0 top-0 flex h-screen flex-col gap-3 border-r px-2 lg:w-1/5">
-      <Link href="/update-profile" className="max-w-fit">
-        <Avatar className="mt-4 cursor-pointer">
+      <Link href="/update-profile" className="mt-4 w-2/4 cursor-pointer">
+        <Avatar>
           <AvatarImage
-            src={user?.picture || "/user-placeholder.png"}
+            src={userProfile?.image || "/user-placeholder.png"}
             className="rounded-full object-cover"
           />
           <AvatarFallback>CN</AvatarFallback>
