@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { PrismaClient } from "../generated/prisma/client";
+import { Pool } from "@neondatabase/serverless";
 import { PrismaNeon } from "@prisma/adapter-neon";
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
@@ -9,9 +10,8 @@ function getPrismaClient() {
     throw new Error("DATABASE_URL environment variable is not set");
   }
 
-  const adapter = new PrismaNeon({
-    connectionString: process.env.DATABASE_URL,
-  });
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const adapter = new PrismaNeon(pool as any);
   return new PrismaClient({ adapter });
 }
 
