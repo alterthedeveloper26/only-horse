@@ -1,3 +1,5 @@
+import { Prisma } from "@/generated/prisma/client";
+
 export type AcceptedMedia = "image" | "video";
 
 export interface CreatePostDto {
@@ -12,3 +14,14 @@ export interface CreateProductDto {
   image: string;
   price: number;
 }
+
+export type PostWithComments = Prisma.PostGetPayload<{
+  include: {
+    comments: {
+      include: {
+        user: true;
+      };
+    };
+    likesList: true;
+  };
+}>;

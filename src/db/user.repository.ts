@@ -17,3 +17,17 @@ export const updateUserById = async (id: string, data: Partial<User>) => {
     data,
   });
 };
+
+export const getAdminUser = async () => {
+  const adminEmail = process.env.ADMIN_EMAIL;
+
+  if (!adminEmail) {
+    throw new Error("Please make sure ADMIN_EMAIL is configured in your env!");
+  }
+
+  return prisma.user.findUnique({
+    where: {
+      email: adminEmail,
+    },
+  });
+};

@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Home, LayoutDashboard, Shirt, User } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -13,8 +13,6 @@ import {
 import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs";
 import { ModeToggle } from "./ModeToggle";
 import { getCurrentUser, checkAdmin } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
-import { KEYS } from "@/constants";
 import { getUserById } from "@/db/user.repository";
 
 const SIDEBAR_LINKS = [
@@ -36,8 +34,8 @@ const Sidebar = async () => {
   const isAdmin = checkAdmin(userProfile?.email);
   return (
     <div className="sticky left-0 top-0 flex h-screen flex-col gap-3 border-r px-2 lg:w-1/5">
-      <Link href="/update-profile" className="mt-4 w-2/4 cursor-pointer">
-        <Avatar>
+      <Link href="/update-profile" className="mt-2 cursor-pointer px-2">
+        <Avatar className="">
           <AvatarImage
             src={userProfile?.image || "/user-placeholder.png"}
             className="rounded-full object-cover"

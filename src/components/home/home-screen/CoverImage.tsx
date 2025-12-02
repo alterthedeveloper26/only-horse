@@ -1,8 +1,15 @@
+import { countLike } from "@/db/like.repository";
+import { countMedia } from "@/db/post.repository";
+import { formatLikes } from "@/lib/utils";
 import { Heart, Image as LucidImage, Video } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 
-const CoverImage = () => {
+const CoverImage = async () => {
+  const imageCount = await countMedia("image");
+  const videoCount = await countMedia("video");
+  const likeCount = await countLike();
+
   return (
     <div className="relative h-44 overflow-hidden">
       <Image
@@ -22,20 +29,22 @@ const CoverImage = () => {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1">
                 <LucidImage className="h-4 w-4" />
-                <span className="text-sm font-bold">45</span>
+                <span className="text-sm font-bold">{imageCount}</span>
               </div>
 
               <span className="text-xs">•</span>
 
               <div className="flex items-center gap-1">
                 <Video className="h-4 w-4" />
-                <span className="text-sm font-bold">45</span>
+                <span className="text-sm font-bold">{videoCount}</span>
               </div>
               <span className="text-xs">•</span>
 
               <div className="flex items-center gap-1">
                 <Heart className="h-4 w-4" />
-                <span className="text-sm font-bold">45</span>
+                <span className="text-sm font-bold">
+                  {formatLikes(likeCount)}
+                </span>
               </div>
             </div>
           </div>

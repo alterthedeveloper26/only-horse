@@ -1,111 +1,210 @@
 "use client";
 
-import UnderlinedText from "@/components/decorators/UnderlinedText";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
-import { user } from "@/dummy_data";
+import { User } from "@/generated/prisma/client";
 import { cn } from "@/lib/utils";
+import { PostWithComments } from "@/types";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import { useMutation } from "@tanstack/react-query";
 import {
   Heart,
   ImageIcon,
   LockKeyholeIcon,
   MessageCircle,
   Trash,
+  VideoIcon,
 } from "lucide-react";
+import { CldVideoPlayer } from "next-cloudinary";
 import Image from "next/image";
 import Link from "next/link";
 
 import React, { useState } from "react";
+import { deletePostAction, toggleLikeAction } from "./action";
+import { toast } from "@/lib/toast";
+import { queryClient } from "@/providers/ReactQueryProvider";
+import { KEYS } from "@/constants";
+import PostSkeleton from "@/components/skeletons/PostSkeleton";
+import Alert from "@/components/Alert";
+import { motion } from "framer-motion";
+
+const AnimatedHeart = motion(Heart);
 
 const Post = ({
   post,
   admin,
   isSubscribed,
 }: {
-  post: any;
-  admin: any;
+  post: PostWithComments;
+  admin: User;
   isSubscribed: boolean;
 }) => {
-  const [liked, setLiked] = useState(false);
+  const [postState, setPostState] = useState({
+    liked: post.likesList.length > 0,
+    likes: post.likes,
+  });
+  const { user } = useKindeBrowserClient();
+
+  const { mutate: deletePost, isPending } = useMutation({
+    mutationKey: ["deletePost"],
+    mutationFn: async () => deletePostAction(post.id),
+    onSuccess: () => {
+      toast.success("Delete post successfully!");
+      queryClient.invalidateQueries({
+        queryKey: [KEYS.FETCH_POSTS],
+      });
+    },
+    onError: (err) => {
+      console.log(err);
+      toast.error(err.message);
+    },
+  });
+
+  const { mutate: toggleLike } = useMutation({
+    mutationKey: ["like"],
+    mutationFn: async () => toggleLikeAction(post.id),
+    onMutate: () => {
+      const prevState = { ...postState };
+      setPostState((state) => ({
+        likes: state.liked ? Math.max(state.likes - 1, 0) : state.likes + 1,
+        liked: !state.liked,
+      }));
+      return { likedStorage: prevState };
+    },
+    onError: (err, data, context) => {
+      toast.error("You can not like this post!");
+      console.log("__________: ", err);
+      setPostState(context!.likedStorage);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [KEYS.FETCH_POSTS],
+      });
+    },
+  });
 
   return (
-    <div className="flex flex-col gap-3 border-t p-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Avatar>
-            <AvatarImage src={admin.image || "/user-placeholder.png"} />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
-          <div>
-            <span className="text-sm font-semibold md:text-base">
-              {admin.name}
-            </span>
-          </div>
+    <>
+      {isPending && (
+        <div className="mt-10 flex flex-col gap-10 px-3">
+          <PostSkeleton />
         </div>
-        <div className="flex items-center gap-2">
-          <p className="text-xs tracking-tighter text-zinc-400 md:text-sm">
-            25.11.2025
-          </p>
-          {admin.id === user.id && (
-            <Trash className="h-5 w-5 cursor-pointer text-muted-foreground hover:text-red-500" />
-          )}
-        </div>
-      </div>
-      <p className="text-sm md:text-base">{post.text}</p>
-      {(post.isPublic || isSubscribed) &&
-        post.mediaUrl &&
-        post.mediaType === "image" && (
-          <div className="relative w-full overflow-hidden rounded-lg pb-[56%]">
-            <Image
-              src={post.mediaUrl}
-              alt="post img"
-              className="rounded-lg object-cover"
-              fill
-            />
-          </div>
-        )}
-
-      {/* {(post.isPublic || isSubscribed) && post.mediaUrl && post.mediaType === 'video' && ()} */}
-      {!(post.isPublic || isSubscribed) && (
-        <div className="bg-of relative flex h-96 w-full flex-col items-center justify-center overflow-hidden rounded-md bg-slate-800 px-5">
-          <LockKeyholeIcon className="z-0 mb-20 h-16 w-16 text-zinc-400" />
-          <div
-            aria-hidden="true"
-            className="absolute left-0 top-0 h-full w-full bg-stone-800 opacity-60"
-          />
-          <div className="z-10 flex w-full flex-col gap-2 rounded border border-gray-500 p-2">
-            <div className="flex items-center gap-1">
-              <ImageIcon className="h-4 w-4" />
-              <span className="text-xs">1</span>
+      )}
+      {!isPending && (
+        <div className="flex flex-col gap-3 border-t p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Avatar>
+                <AvatarImage
+                  src={admin.image || "/user-placeholder.png"}
+                  className="object-cover"
+                />
+                <AvatarFallback>CN</AvatarFallback>
+              </Avatar>
+              <div>
+                <span className="text-sm font-semibold md:text-base">
+                  {admin.name}
+                </span>
+              </div>
             </div>
-            <Link
-              className={buttonVariants({
-                className: "w-full !rounded-full font-bold text-white",
-              })}
-              href="/pricing"
-            >
-              Subscribe to unlock
-            </Link>
+            <div className="flex items-center gap-3">
+              <p className="text-xs tracking-tighter text-zinc-400 md:text-sm">
+                25.11.2025
+              </p>
+              {/* // TODO: fix here */}
+              {admin.id === user?.id && (
+                <Alert confirmAction={() => deletePost()}>
+                  <Trash className="h-5 w-5 cursor-pointer text-muted-foreground hover:text-red-500" />
+                </Alert>
+              )}
+            </div>
+          </div>
+          <p className="text-sm md:text-base">{post.text}</p>
+          {(post.isPublic || isSubscribed) &&
+            post.mediaUrl &&
+            post.mediaType === "image" && (
+              <div className="relative w-full overflow-hidden rounded-lg pb-[56%]">
+                <Image
+                  src={post.mediaUrl}
+                  alt="post img"
+                  className="rounded-lg object-cover"
+                  fill
+                />
+              </div>
+            )}
+
+          {(post.isPublic || isSubscribed) &&
+            post.mediaUrl &&
+            post.mediaType === "video" && (
+              <div className="mx-auto w-full">
+                <CldVideoPlayer
+                  width={960}
+                  height={540}
+                  className="rounded-md"
+                  src={post.mediaUrl}
+                />
+              </div>
+            )}
+
+          {!(post.isPublic || isSubscribed) && (
+            <div className="bg-of relative flex h-96 w-full flex-col items-center justify-center overflow-hidden rounded-md bg-slate-800 px-5">
+              <LockKeyholeIcon className="z-0 mb-20 h-16 w-16 text-zinc-400" />
+              <div
+                aria-hidden="true"
+                className="absolute left-0 top-0 h-full w-full bg-stone-800 opacity-60"
+              />
+              <div className="z-10 flex w-full flex-col gap-2 rounded border border-gray-500 p-2">
+                <div className="flex items-center gap-1">
+                  {post.mediaType === "image" ? (
+                    <ImageIcon className="h-4 w-4" />
+                  ) : (
+                    <VideoIcon className="h-4 w-4" />
+                  )}
+                  <span className="text-xs">1</span>
+                </div>
+                <Link
+                  className={buttonVariants({
+                    className: "w-full !rounded-full font-bold text-white",
+                  })}
+                  href="/pricing"
+                >
+                  Subscribe to unlock
+                </Link>
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-4">
+            <div className="flex items-center gap-1">
+              <AnimatedHeart
+                animate={{
+                  fill: postState.liked ? "#ef4444" : "transparent",
+                }}
+                whileHover={{ scale: 1.1 }}
+                className="h-5 w-5 cursor-pointer outline-none"
+                onClick={() => {
+                  if (!isSubscribed)
+                    return toast.error("You must subcribe to like this post");
+                  toggleLike();
+                }}
+              />
+              <span className="text-xs tabular-nums tracking-tighter text-zinc-400">
+                {postState.likes}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1"></div>
+
+            <div className="flex items-center gap-1">
+              <MessageCircle className="h-5 w-5 cursor-pointer" />
+              <span className="text-xs tabular-nums tracking-tighter text-zinc-400">
+                {post.comments.length}
+              </span>
+            </div>
           </div>
         </div>
       )}
-
-      <div className="flex gap-4">
-        <div className="flex items-center gap-1">
-          <Heart
-            className={cn("h-5 w-5 cursor-pointer", {
-              "fill-red-500 text-red-500": liked,
-            })}
-            onClick={() => setLiked((liked) => !liked)}
-          />
-          <span className="text-xs tracking-tighter text-zinc-400">55</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <MessageCircle className="h-5 w-5 cursor-pointer" />
-          <span className="text-xs tracking-tighter text-zinc-400">55</span>
-        </div>
-      </div>
-    </div>
+    </>
   );
 };
 

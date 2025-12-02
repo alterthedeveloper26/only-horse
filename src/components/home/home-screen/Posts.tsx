@@ -1,29 +1,46 @@
+"use client";
+
 import UnderlinedText from "@/components/decorators/UnderlinedText";
 import PostSkeleton from "@/components/skeletons/PostSkeleton";
 import Post from "./Post";
-import { admin, posts, user } from "@/dummy_data";
+import { User } from "@/generated/prisma/client";
+import { useQuery } from "@tanstack/react-query";
+import { getPostsAction } from "./action";
+import { KEYS } from "@/constants";
 
-const Posts = () => {
-  const isLoading = false;
+const Posts = ({
+  admin,
+  isSubscribed,
+}: {
+  admin: User;
+  isSubscribed: boolean;
+}) => {
+  const { data: posts, isPending } = useQuery({
+    queryKey: [KEYS.FETCH_POSTS],
+    queryFn: async () => getPostsAction(),
+  });
+
   return (
     <div>
-      {!isLoading &&
-        posts.map((post) => (
+      {!isPending &&
+        posts &&
+        posts?.length > 0 &&
+        posts!.map((post) => (
           <Post
             key={post.id}
             post={post}
             admin={admin}
-            isSubscribed={user.isSubscribed}
+            isSubscribed={isSubscribed}
           />
         ))}
-      {isLoading && (
+      {isPending && (
         <div className="mt-10 flex flex-col gap-10 px-3">
           {[...Array(3)].map((_, index) => (
             <PostSkeleton key={index} />
           ))}
         </div>
       )}
-      {!isLoading && posts.length === 0 && (
+      {!isPending && posts?.length === 0 && (
         <div className="mt-10 px-3">
           <div className="mx-auto flex w-full flex-col items-center space-y-3 md:w-3/4">
             <p className="text-xl font-semibold">

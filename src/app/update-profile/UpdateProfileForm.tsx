@@ -19,6 +19,7 @@ import { getUserProfileAction, updateUserProfileAction } from "./action";
 import { Loader } from "lucide-react";
 import { queryClient } from "@/providers/ReactQueryProvider";
 import { KEYS } from "@/constants";
+import { toast } from "@/lib/toast";
 
 const UpdateProfileForm = () => {
   const [name, setName] = useState<string>();
@@ -52,6 +53,10 @@ const UpdateProfileForm = () => {
       queryClient.invalidateQueries({
         queryKey: [KEYS.GET_PROFILE],
       });
+      toast.success("Updated successfully!");
+    },
+    onError: () => {
+      toast.error("Failed to update!");
     },
   });
 
@@ -71,7 +76,7 @@ const UpdateProfileForm = () => {
             <Avatar className="h-20 w-20">
               <AvatarImage
                 src={mediaUrl || profileImage || "/user-placeholder.png"}
-                className="object-contain"
+                className="object-cover"
               />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>

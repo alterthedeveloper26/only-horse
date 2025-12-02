@@ -20,7 +20,7 @@ export function checkAdmin(email?: string | null) {
   return email && email === process.env.ADMIN_EMAIL;
 }
 
-export function success<T>(data: T) {
+export function success<T>(data?: T) {
   return {
     success: true,
     data,
@@ -32,4 +32,13 @@ export function fail(message?: string) {
     success: false,
     message,
   };
+}
+
+export function formatLikes(num: number): string | number {
+  const oneMil = 1_000_000;
+  const oneKilo = 1_000;
+  if (num >= oneMil) return "+" + (num / oneMil).toFixed(0) + "M";
+  if (num >= oneKilo) return "+" + (num / oneKilo).toFixed(0) + "M";
+
+  return num;
 }

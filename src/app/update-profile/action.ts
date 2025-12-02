@@ -3,6 +3,7 @@
 import { getUserById, updateUserById } from "@/db/user.repository";
 import { User } from "@/generated/prisma/client";
 import { getCurrentUser, success } from "@/lib/utils";
+import { revalidatePath } from "next/cache";
 
 export async function getUserProfileAction() {
   const user = await getCurrentUser();
@@ -24,6 +25,8 @@ export async function updateUserProfileAction(updateData: Partial<User>) {
   }
 
   const updatedUser = await updateUserById(user.id, updateData);
+
+  revalidatePath("/secret-dashboard");
 
   return success(updatedUser);
 }
