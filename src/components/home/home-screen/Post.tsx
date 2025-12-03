@@ -1,18 +1,21 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { User } from "@/generated/prisma/client";
 import { cn } from "@/lib/utils";
 import { PostWithComments } from "@/types";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { useMutation } from "@tanstack/react-query";
 import {
+  ArrowRight,
   Heart,
   ImageIcon,
+  Loader,
   LockKeyholeIcon,
   MessageCircle,
   Trash,
+  TriangleRightIcon,
   VideoIcon,
 } from "lucide-react";
 import { CldVideoPlayer } from "next-cloudinary";
@@ -20,13 +23,24 @@ import Image from "next/image";
 import Link from "next/link";
 
 import React, { useState } from "react";
-import { deletePostAction, toggleLikeAction } from "./action";
+import { commentAction, deletePostAction, toggleLikeAction } from "./action";
 import { toast } from "@/lib/toast";
 import { queryClient } from "@/providers/ReactQueryProvider";
 import { KEYS } from "@/constants";
 import PostSkeleton from "@/components/skeletons/PostSkeleton";
 import Alert from "@/components/Alert";
 import { motion } from "framer-motion";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import Comment from "./Comment";
 
 const AnimatedHeart = motion(Heart);
 
@@ -44,6 +58,7 @@ const Post = ({
     likes: post.likes,
   });
   const { user } = useKindeBrowserClient();
+  const [comment, setComment] = useState<string>("");
 
   const { mutate: deletePost, isPending } = useMutation({
     mutationKey: ["deletePost"],
@@ -82,6 +97,26 @@ const Post = ({
       });
     },
   });
+
+  const { mutate: createComment, isPending: isCommenting } = useMutation({
+    mutationFn: async () => commentAction({ postId: post.id, text: comment }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [KEYS.FETCH_POSTS],
+      });
+      setComment("");
+    },
+    onError: (e) => {
+      console.log("______________: ", e);
+      toast.error("Something wrong happened in our server!");
+    },
+  });
+
+  const handleCommentSubmission = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!comment) return toast.error("You must provide comment message!");
+    createComment();
+  };
 
   return (
     <>
@@ -193,10 +228,52 @@ const Post = ({
               </span>
             </div>
 
-            <div className="flex items-center gap-1"></div>
-
             <div className="flex items-center gap-1">
-              <MessageCircle className="h-5 w-5 cursor-pointer" />
+              <Dialog>
+                <DialogTrigger>
+                  <MessageCircle className="h-5 w-5 cursor-pointer" />
+                </DialogTrigger>
+                {isSubscribed && (
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Comments</DialogTitle>
+                    </DialogHeader>
+                    <ScrollArea className="h-[400px] w-full rounded-md p-4">
+                      {post.comments.map((comment) => (
+                        <Comment key={comment.id} comment={comment} />
+                      ))}
+                      {post.comments.length === 0 && (
+                        <div className="flex h-full w-full flex-col items-center justify-center">
+                          <p className="text-zinc-400">No comments yet</p>
+                        </div>
+                      )}
+                    </ScrollArea>
+                    <form
+                      className="flex items-center gap-2"
+                      onSubmit={handleCommentSubmission}
+                    >
+                      <Input
+                        placeholder="Add a comment"
+                        onChange={(e) => setComment(e.target.value)}
+                        value={comment}
+                      />
+                      <DialogFooter>
+                        <Button
+                          type="submit"
+                          className=""
+                          disabled={isCommenting}
+                        >
+                          {isCommenting ? (
+                            <Loader className="animate-spin" />
+                          ) : (
+                            <ArrowRight />
+                          )}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                )}
+              </Dialog>
               <span className="text-xs tabular-nums tracking-tighter text-zinc-400">
                 {post.comments.length}
               </span>

@@ -10,3 +10,4 @@ export async function GET() {
   const result = await checkAuthStatus();
   return NextResponse.json(result);
 }
+

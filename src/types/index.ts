@@ -25,3 +25,9 @@ export type PostWithComments = Prisma.PostGetPayload<{
     likesList: true;
   };
 }>;
+
+export type CommentWithUser = Prisma.CommentGetPayload<{
+  include: {
+    user: true;
+  };
+}>;
