@@ -53,3 +53,11 @@ export const isPostExisted = async (id: string) => {
   });
   return num > 0;
 };
+
+export const getPostById = async (id: string) => {
+  return prisma.post.findUnique({
+    where: {
+      id,
+    },
+  });
+};

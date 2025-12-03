@@ -9,6 +9,14 @@ export const getUserById = async (id: string) => {
   });
 };
 
+export const getUserByEmail = async (email: string) => {
+  return prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+};
+
 export const updateUserById = async (id: string, data: Partial<User>) => {
   return await prisma.user.update({
     where: {

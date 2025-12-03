@@ -29,7 +29,7 @@ import { queryClient } from "@/providers/ReactQueryProvider";
 import { KEYS } from "@/constants";
 import PostSkeleton from "@/components/skeletons/PostSkeleton";
 import Alert from "@/components/Alert";
-import { motion } from "framer-motion";
+import { animate, motion, useAnimate } from "framer-motion";
 import {
   Dialog,
   DialogContent,
@@ -43,6 +43,7 @@ import { Input } from "@/components/ui/input";
 import Comment from "./Comment";
 
 const AnimatedHeart = motion(Heart);
+const AnimatedComment = motion(MessageCircle);
 
 const Post = ({
   post,
@@ -59,6 +60,23 @@ const Post = ({
   });
   const { user } = useKindeBrowserClient();
   const [comment, setComment] = useState<string>("");
+
+  const [scope, animate] = useAnimate();
+
+  const handleCommentClick = () => {
+    if (!isSubscribed && !post.isPublic)
+      animate(
+        "#comment",
+        {
+          x: [-1, 0, 1, 0],
+          color: ["#ef4444", "#000000"],
+        },
+        {
+          type: "keyframes",
+        },
+      );
+    return;
+  };
 
   const { mutate: deletePost, isPending } = useMutation({
     mutationKey: ["deletePost"],
@@ -108,7 +126,7 @@ const Post = ({
     },
     onError: (e) => {
       console.log("______________: ", e);
-      toast.error("Something wrong happened in our server!");
+      toast.error(e.message);
     },
   });
 
@@ -215,10 +233,12 @@ const Post = ({
                 animate={{
                   fill: postState.liked ? "#ef4444" : "transparent",
                 }}
+                //NOTE: stiffness: 400, mass: 100
+                transition={{ type: "spring" }}
                 whileHover={{ scale: 1.1 }}
                 className="h-5 w-5 cursor-pointer outline-none"
                 onClick={() => {
-                  if (!isSubscribed)
+                  if (!isSubscribed && !post.isPublic)
                     return toast.error("You must subcribe to like this post");
                   toggleLike();
                 }}
@@ -230,10 +250,19 @@ const Post = ({
 
             <div className="flex items-center gap-1">
               <Dialog>
-                <DialogTrigger>
-                  <MessageCircle className="h-5 w-5 cursor-pointer" />
+                <DialogTrigger ref={scope}>
+                  <AnimatedComment
+                    variants={{
+                      scale: { scale: 1.1 },
+                    }}
+                    transition={{ type: "spring" }}
+                    whileHover="scale"
+                    className="h-5 w-5 cursor-pointer"
+                    onClick={handleCommentClick}
+                    id="comment"
+                  />
                 </DialogTrigger>
-                {isSubscribed && (
+                {(isSubscribed || post.isPublic) && (
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Comments</DialogTitle>

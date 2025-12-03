@@ -3,6 +3,7 @@
 import { createComment } from "@/db/comment.repository";
 import { like, unlike } from "@/db/like.repository";
 import {
+  getPostById,
   getPostWithLikeUserAndComment,
   isPostExisted,
   updatePostById,
@@ -79,14 +80,15 @@ export const commentAction = async ({
   if (!kindeSession) throw new Error("Unauthorized!");
 
   const user = await getUserById(kindeSession.id);
+  const post = await getPostById(postId);
 
-  if (!user || !user.isSubscribed) {
-    throw new Error("You can not comment on this post!");
+  if (!post) {
+    throw new Error("Post not found!");
   }
 
-  const isValid = isPostExisted(postId);
-
-  if (!isValid) throw new Error("Post does not exist!");
+  if (!user || (!user.isSubscribed && !post.isPublic)) {
+    throw new Error("You can not comment on this post!");
+  }
 
   return createComment({
     userId: user.id,
