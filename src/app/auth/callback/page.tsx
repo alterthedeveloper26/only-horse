@@ -5,6 +5,8 @@ import { Loader } from "lucide-react";
 import React, { useEffect } from "react";
 import { checkAuthStatus } from "./action";
 import { useRouter } from "next/navigation";
+import { STRIPE_URL_STORED_KEY } from "@/constants";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 
 const Page = () => {
   const router = useRouter();
@@ -16,10 +18,21 @@ const Page = () => {
   });
 
   useEffect(() => {
-    if (!data?.success) {
+    if (isLoading) return;
+
+    const stripeUrl = localStorage.getItem(STRIPE_URL_STORED_KEY);
+    // NOTE: not try to subscribe
+    if (!stripeUrl) {
       router.push("/");
+    } else {
+      if (!data || (data && data.isSubscribed)) {
+        router.push("/");
+      }
+
+      window.location.href = stripeUrl + "?prefilled_email=" + data!.email;
+      localStorage.removeItem(STRIPE_URL_STORED_KEY);
     }
-  }, [data]);
+  }, [data, isLoading]);
 
   return (
     <div className="mt-20 flex w-full justify-center">

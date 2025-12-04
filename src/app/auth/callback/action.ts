@@ -8,7 +8,7 @@ export async function checkAuthStatus() {
 
   if (!user) {
     console.log("[DEBUG] User not found in Kinde");
-    return { success: false };
+    return null;
   }
 
   const existingUser = await prisma.user.findUnique({
@@ -17,19 +17,14 @@ export async function checkAuthStatus() {
     },
   });
 
-  console.log("[DEBUG] found user: ", existingUser);
+  if (existingUser) return existingUser;
 
-  if (!existingUser) {
-    await prisma.user.create({
-      data: {
-        id: user.id,
-        email: user.email!,
-        name: user.given_name + " " + user.family_name,
-        image: user.picture,
-      },
-    });
-    console.log("[DEBUG] Create user successfully");
-  }
-
-  return { success: true };
+  return await prisma.user.create({
+    data: {
+      id: user.id,
+      email: user.email!,
+      name: user.given_name + " " + user.family_name,
+      image: user.picture,
+    },
+  });
 }

@@ -1,14 +1,19 @@
 import { upsertSubscription } from "@/db/subscription.repository";
 import {
+  getUserByCustomerId,
   getUserByEmail,
-  getUserById,
   updateUserById,
 } from "@/db/user.repository";
 import { stripe } from "@/lib/stripe";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { Resend } from "resend";
+import { render } from "@react-email/components";
+import WelcomeEmail from "@/emails/WelcomeEmail";
+import { updateOrderById } from "@/db/order.repository";
 
+const resend = new Resend(process.env.RESEND_API_KEY);
 const webHookSecret = process.env.STRIPE_WEBHOOK_SECRET_DEV_KEY;
 const monthlyPriceId = process.env.STRIPE_MONTHLY_SUB_ID;
 const yearlyPriceId = process.env.STRIPE_YEARLY_SUB_ID;
@@ -77,7 +82,7 @@ export async function POST(req: Request) {
                 throw new Error("Invalid price id!");
               }
 
-              await upsertSubscription(user.id, {
+              const subEntity = await upsertSubscription(user.id, {
                 endDate,
                 planId,
                 price,
@@ -86,14 +91,78 @@ export async function POST(req: Request) {
               await updateUserById(user.id, {
                 isSubscribed: true,
               });
+
+              console.log("What is the email: ", customerDetails.email);
+              try {
+                const emailHtml = await render(
+                  WelcomeEmail({
+                    userEmail: customerDetails.email,
+                    userName: user.name || "Valued Customer",
+                    subscriptionStartDate: subEntity.startDate,
+                    subscriptionEndDate: subEntity.endDate,
+                  }),
+                );
+
+                const emailResult = await resend.emails.send({
+                  from: "OnlyMax <onboarding@resend.dev>",
+                  to: [customerDetails.email],
+                  subject: "Subscription Welcome",
+                  html: emailHtml,
+                });
+                console.log("Email sent successfully:", emailResult);
+              } catch (emailError) {
+                console.error("Failed to send welcome email:", emailError);
+                // Don't throw - we don't want to fail the webhook if email fails
+              }
             } else {
-              // TODO: implemented later (buying product)
+              const { orderId } = session.metadata as {
+                orderId: string;
+                size: string;
+              };
+
+              const shippingDetails =
+                session.collected_information?.shipping_details?.address;
+
+              const updateOrder = await updateOrderById({
+                id: orderId,
+                data: {
+                  isPaid: true,
+                  shippingAddress: {
+                    address: shippingDetails?.line1 ?? "",
+                    city: shippingDetails?.city ?? "",
+                    country: shippingDetails?.country ?? "",
+                    state: shippingDetails?.state ?? "",
+                    postalCode: shippingDetails?.postal_code ?? "",
+                  },
+                },
+              });
+
+              // NOTE: send a success email
             }
           }
         }
+        break;
+      }
+
+      case "customer.subscription.deleted": {
+        const sub = await stripe.subscriptions.retrieve(
+          (data.object as Stripe.Subscription).id,
+        );
+        const user = await getUserByCustomerId(sub.customer as string);
+
+        if (!user) {
+          throw new Error("User not found! Critical Server Error!");
+        }
+
+        await updateUserById(user.id, {
+          isSubscribed: false,
+        });
       }
     }
 
     return NextResponse.json({});
-  } catch (e) {}
+  } catch (e) {
+    console.log("What is the error?: ", e);
+    return NextResponse.json({});
+  }
 }

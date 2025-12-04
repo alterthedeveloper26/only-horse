@@ -1,0 +1,8 @@
+import BaseLayout from "@/components/BaseLayout";
+import React, { ReactNode } from "react";
+
+const Layout = ({ children }: { children: ReactNode }) => {
+  return <BaseLayout renderRightPanel={true}>{children}</BaseLayout>;
+};
+
+export default Layout;

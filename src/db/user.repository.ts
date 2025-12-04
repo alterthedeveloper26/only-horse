@@ -17,6 +17,14 @@ export const getUserByEmail = async (email: string) => {
   });
 };
 
+export const getUserByCustomerId = async (customerId: string) => {
+  return prisma.user.findUnique({
+    where: {
+      customerId,
+    },
+  });
+};
+
 export const updateUserById = async (id: string, data: Partial<User>) => {
   return await prisma.user.update({
     where: {
