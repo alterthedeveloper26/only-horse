@@ -7,10 +7,10 @@ import ZoomedImage from "@/components/ZoomedImage";
 import { KEYS } from "@/constants";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { notFound, useSearchParams } from "next/navigation";
 import React from "react";
 import { getOrderAction } from "./action";
-import { centsToDollars } from "@/lib/utils";
+import { centsToDollars, getSize } from "@/lib/utils";
 
 const PurchaseSummary = () => {
   const searchParams = useSearchParams();
@@ -33,11 +33,26 @@ const PurchaseSummary = () => {
     enabled: !!orderId, // Only run query if orderId exists
   });
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center p-6">
+        <p className="mb-6 text-center text-base">
+          Verifying your payment, please wait...
+        </p>
+        <span className="h-10 w-10 animate-spin rounded-full border-b-2 border-t-2 border-sky-400" />
+      </div>
+    );
+  }
+
+  if (!order) {
+    return notFound();
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-6">
       <div className="flex flex-col items-center">
         <ZoomedImage
-          imgSrc={order?.product.image!}
+          imgSrc={order.product.image!}
           className="my-5 h-96 w-96 rounded-md"
         />
         <h1 className="mb-4 text-2xl font-bold">
@@ -56,7 +71,7 @@ const PurchaseSummary = () => {
         <p className="text-muted-foreground">
           Order Id:{" "}
           <span className="font-bold text-foreground text-sky-400">
-            {order?.id}
+            {order.id}
           </span>
         </p>
 
@@ -66,21 +81,21 @@ const PurchaseSummary = () => {
           </CardHeader>
           <CardContent>
             <div className="flex justify-between">
-              <p>{order?.product.name}</p>
-              <p>${centsToDollars(order?.product.price!)}</p>
+              <p>{order.product.name}</p>
+              <p>${centsToDollars(order.product.price!)}</p>
             </div>
             <div className="flex justify-between">
-              <p>Size: {order?.size}</p>
+              <p>Size: {getSize(order.size as any)}</p>
               <p>Quantity: 1</p>
             </div>
 
             <div className="mt-4">
               <h3 className="font-semibold">Shipping Address</h3>
-              <p>Address: {order?.shippingAddress?.address} </p>
-              <p>City: {order?.shippingAddress?.city}</p>
-              <p>State: {order?.shippingAddress?.state}</p>
-              <p>Postal Code: {order?.shippingAddress?.postalCode}</p>
-              <p>Country: {order?.shippingAddress?.country}</p>
+              <p>Address: {order.shippingAddress?.address} </p>
+              <p>City: {order.shippingAddress?.city}</p>
+              <p>State: {order.shippingAddress?.state}</p>
+              <p>Postal Code: {order.shippingAddress?.postalCode}</p>
+              <p>Country: {order.shippingAddress?.country}</p>
             </div>
           </CardContent>
         </Card>

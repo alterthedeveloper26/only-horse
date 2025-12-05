@@ -13,7 +13,7 @@ const UserProfile = async () => {
 
   return (
     <div className="flex flex-col">
-      <CoverImage />
+      <CoverImage adminName={adminUser?.name!} />
       <div className="flex flex-col p-4">
         <div className="flex flex-col justify-between gap-4 md:flex-row">
           <Avatar className="-mt-10 h-20 w-20 border-2">

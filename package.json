@@ -9,7 +9,9 @@
     "lint": "next lint",
     "prisma:generate": "prisma generate --schema=./prisma/schema.prisma",
     "prisma:migrate": "prisma migrate dev --schema=./prisma/schema.prisma",
-    "prisma:push": "prisma db push"
+    "prisma:push": "prisma db push",
+    "stripe:webhook:init": "stripe listen --forward-to http://localhost:3000/api/webhooks/stripe",
+    "email": "email dev --dir src/emails"
   },
   "dependencies": {
     "@kinde-oss/kinde-auth-nextjs": "^2.10.0",
@@ -52,6 +54,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@react-email/preview-server": "^5.0.5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

@@ -12,6 +12,7 @@ import { Resend } from "resend";
 import { render } from "@react-email/components";
 import WelcomeEmail from "@/emails/WelcomeEmail";
 import { updateOrderById } from "@/db/order.repository";
+import ReceiptEmail from "@/emails/ReceiptEmail";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const webHookSecret = process.env.STRIPE_WEBHOOK_SECRET_DEV_KEY;
@@ -137,7 +138,25 @@ export async function POST(req: Request) {
                 },
               });
 
+              const emailHtml = await render(
+                ReceiptEmail({
+                  orderDate: updateOrder.orderDate,
+                  orderNumber: updateOrder.id,
+                  productImage: updateOrder.product.image,
+                  productName: updateOrder.product.name,
+                  productSize: updateOrder.size,
+                  shippingAddress: updateOrder.shippingAddress!,
+                  userName: user.name,
+                }),
+              );
+
               // NOTE: send a success email
+              await resend.emails.send({
+                from: "OnlyHorse <onboarding@resend.dev>",
+                to: [customerDetails.email],
+                subject: "Order confirmation",
+                html: emailHtml,
+              });
             }
           }
         }

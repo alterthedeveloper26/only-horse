@@ -1,9 +1,19 @@
 "use server";
 
 import { prisma } from "@/db/prisma";
-import { checkAdmin, getCurrentUser } from "@/lib/utils";
+import { centsToDollars, checkAdmin, getCurrentUser } from "@/lib/utils";
 import { CreatePostDto, CreateProductDto } from "@/types";
 import { success } from "@/lib/utils";
+import {
+  getRecentSales,
+  getTotalMerchRevenue,
+  getTotalOrder,
+} from "@/db/order.repository";
+import {
+  getRecentSubscriptions,
+  getTotalSubscription,
+  getTotalSubscriptionRevenue,
+} from "@/db/subscription.repository";
 
 export async function getAndValidateAdmin() {
   const user = await getCurrentUser();
@@ -91,3 +101,31 @@ export const toggleProductArchiveAction = async (prodId: string) => {
 
   return success(updatedProd);
 };
+
+export async function getDashBoardDataAction() {
+  const totalRevenuePromise = Promise.all([
+    getTotalMerchRevenue(),
+    getTotalSubscriptionRevenue(),
+  ]);
+
+  const [totalRevenueRes, totalSub, totalOrder, recentSales, recentSubs] =
+    await Promise.all([
+      totalRevenuePromise,
+      getTotalSubscription(),
+      getTotalOrder(),
+      getRecentSales(),
+      getRecentSubscriptions(),
+    ]);
+
+  const revenue = totalRevenueRes.reduce((pre, cur) => {
+    return pre + cur._sum.price!;
+  }, 0);
+
+  return {
+    revenue: centsToDollars(revenue),
+    totalSub,
+    totalOrder,
+    recentSales,
+    recentSubs,
+  };
+}

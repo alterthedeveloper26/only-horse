@@ -38,6 +38,13 @@ export const updateOrderById = async ({
         create: data.shippingAddress,
       },
     },
+    select: {
+      id: true,
+      product: true,
+      size: true,
+      shippingAddress: true,
+      orderDate: true,
+    },
   });
 };
 
@@ -49,6 +56,38 @@ export const getOrderWithProdById = async (id: string) => {
     include: {
       product: true,
       shippingAddress: true,
+    },
+  });
+};
+
+export const getTotalMerchRevenue = async () => {
+  return prisma.order.aggregate({
+    _sum: {
+      price: true,
+    },
+  });
+};
+
+export const getTotalOrder = async () => {
+  return prisma.order.count();
+};
+
+export const getRecentSales = async () => {
+  return prisma.order.findMany({
+    select: {
+      user: {
+        select: {
+          name: true,
+          email: true,
+          image: true,
+        },
+      },
+      price: true,
+      orderDate: true,
+    },
+    take: 2,
+    orderBy: {
+      orderDate: "desc",
     },
   });
 };

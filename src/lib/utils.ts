@@ -42,3 +42,13 @@ export function formatLikes(num: number): string | number {
 
   return num;
 }
+
+export function getSize(sizeShortHand: "sm" | "md" | "lg"): string {
+  const sizeMap = {
+    sm: "Small",
+    md: "Medium",
+    lg: "Fat",
+  };
+
+  return sizeMap[sizeShortHand];
+}

@@ -3,8 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { centsToDollars } from "@/lib/utils";
 import { DollarSign, SubscriptIcon } from "lucide-react";
 import React from "react";
+import { getDashBoardDataAction } from "../action";
+import { Order, Subscription } from "@/generated/prisma/client";
 
-const AnalyticsTab = () => {
+const AnalyticsTab = async () => {
+  const data = await getDashBoardDataAction();
+
   return (
     <>
       <div className="my-5 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -14,7 +18,7 @@ const AnalyticsTab = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$24,345</div>
+            <div className="text-2xl font-bold">${data.revenue}</div>
           </CardContent>
         </Card>
         <Card>
@@ -23,7 +27,7 @@ const AnalyticsTab = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+345</div>
+            <div className="text-2xl font-bold">+{data.totalOrder}</div>
           </CardContent>
         </Card>
         <Card>
@@ -32,14 +36,14 @@ const AnalyticsTab = () => {
             <SubscriptIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">24,345</div>
+            <div className="text-2xl font-bold">{data.totalSub}</div>
           </CardContent>
         </Card>
       </div>
 
       <div className="my-5 flex flex-wrap gap-5">
-        <RecentSubscriptions />
-        <RecentSales />
+        <RecentSubscriptions recentSubscriptions={data.recentSubs} />
+        <RecentSales recentSales={data.recentSales} />
       </div>
     </>
   );
@@ -47,25 +51,15 @@ const AnalyticsTab = () => {
 
 export default AnalyticsTab;
 
-const RecentSubscriptions = () => {
-  const recentSubscriptions = [
-    {
-      user: {
-        name: "John Doe",
-        email: "john@email.com",
-        image: "",
-      },
-      price: 10_00,
-    },
-    {
-      user: {
-        name: "Jane Doe",
-        email: "jane@email.com",
-      },
-      price: 20_00,
-    },
-  ];
-
+const RecentSubscriptions = ({
+  recentSubscriptions,
+}: {
+  recentSubscriptions: {
+    price: number;
+    user: { email: string; name: string; image: string | null };
+    planId: string;
+  }[];
+}) => {
   return (
     <Card className="flex-1">
       <CardHeader className="px-3">
@@ -102,26 +96,15 @@ const RecentSubscriptions = () => {
   );
 };
 
-const RecentSales = () => {
-  const recentSales = [
-    {
-      user: {
-        name: "John Doe",
-        email: "john@email.com",
-        image: "",
-      },
-      price: 10_00,
-    },
-    {
-      user: {
-        name: "Jane Doe",
-        email: "jane@email.com",
-        image: "",
-      },
-      price: 20_00,
-    },
-  ];
-
+const RecentSales = ({
+  recentSales,
+}: {
+  recentSales: {
+    price: number;
+    orderDate: Date;
+    user: { email: string; name: string; image: string | null };
+  }[];
+}) => {
   return (
     <Card className="flex-1">
       <CardHeader className="px-3">
